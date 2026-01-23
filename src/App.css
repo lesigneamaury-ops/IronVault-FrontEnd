@@ -1,42 +1,54 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* ========== Base / Reset ========== */
+:root {
+  --bg: #060606;
+  --panel: rgba(10, 10, 10, 0.72);
+  --panel-2: rgba(10, 10, 10, 0.55);
+
+  --text: #f3e9d2;
+  --muted: rgba(243, 233, 210, 0.75);
+
+  --gold: #f3c46b;
+  --gold-2: #c98b2a;
+  --ember: #ff7a1a;
+
+  --danger: #ff4d4d;
+
+  --border: rgba(243, 196, 107, 0.28);
+  --border-strong: rgba(243, 196, 107, 0.5);
+
+  --shadow: 0 16px 60px rgba(0, 0, 0, 0.65);
+  --radius: 18px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+html,
+body {
+  height: 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+.app-content {
+  flex: 1;
 }
