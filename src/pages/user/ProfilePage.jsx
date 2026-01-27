@@ -60,7 +60,7 @@ function ProfilePage() {
       <div className="profile-card">
         <div className="profile-header">
           <img
-            src={profilePicture || "/assets/default-avatar.png"}
+            src={profilePicture || "/assets/defaultAvatar.png"}
             alt="Profile"
             className="profile-avatar"
           />

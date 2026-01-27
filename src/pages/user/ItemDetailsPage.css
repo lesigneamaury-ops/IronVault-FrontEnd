@@ -221,3 +221,97 @@
   padding: 12px;
   outline: none;
 }
+
+.item-details-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.comment-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.comment-menu-btn {
+  width: 34px;
+  height: 28px;
+  border-radius: 10px;
+  border: 1px solid rgba(243, 196, 107, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(243, 233, 210, 0.9);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.comment-menu-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(243, 196, 107, 0.55);
+  box-shadow: 0 0 18px rgba(255, 122, 26, 0.14);
+}
+
+.comment-menu-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.comment-menu-dropdown {
+  position: absolute;
+  top: 34px;
+  right: 0;
+  min-width: 140px;
+  background: rgba(12, 12, 12, 0.95);
+  border: 1px solid rgba(243, 196, 107, 0.22);
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  z-index: 30;
+}
+
+.comment-menu-item {
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: rgba(243, 233, 210, 0.9);
+  cursor: pointer;
+  font-weight: 700;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.comment-menu-item:hover {
+  background: rgba(243, 196, 107, 0.12);
+  color: #ffd79a;
+}
+
+.comment-menu-item.danger {
+  color: rgba(255, 130, 130, 0.95);
+}
+
+.comment-menu-item.danger:hover {
+  background: rgba(255, 77, 77, 0.12);
+  color: #ffd2d2;
+}
+
+.comment-edit {
+  margin-top: 10px;
+}
+
+.comment-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}

@@ -21,6 +21,11 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
   const [editCaption, setEditCaption] = useState(item?.caption || "");
   const [editLoading, setEditLoading] = useState(false);
 
+  const [menuOpenFor, setMenuOpenFor] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentValue, setEditCommentValue] = useState("");
+  const [commentActionLoading, setCommentActionLoading] = useState(false);
+
   const postedById =
     typeof item?.postedBy === "string" ? item?.postedBy : item?.postedBy?._id;
 
@@ -126,7 +131,7 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
       setIsEditing(false);
       if (onUpdated) onUpdated(data);
     } catch (err) {
-      setActionError("Update failed. Make sure PATCH /items/:itemId exists.");
+      setActionError("Update failed.");
     } finally {
       setEditLoading(false);
     }
@@ -134,6 +139,73 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
 
   const handleClose = () => {
     if (onClose) onClose();
+  };
+
+  const getCommentAuthorId = (c) =>
+    c?.author?._id || c?.user?._id || c?.author || c?.user;
+
+  const canManageComment = (c) => {
+    const authorId = getCommentAuthorId(c);
+    const isCommentAuthor =
+      user?._id && authorId && String(user._id) === String(authorId);
+    return isAdmin || isCommentAuthor;
+  };
+
+  const openCommentMenu = (commentId) => {
+    setMenuOpenFor((prev) => (prev === commentId ? null : commentId));
+  };
+
+  const beginEditComment = (c) => {
+    setMenuOpenFor(null);
+    setEditingCommentId(c._id);
+    setEditCommentValue(c.content || "");
+    setCommentError("");
+  };
+
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditCommentValue("");
+  };
+
+  const handleSaveComment = async (commentId) => {
+    const content = editCommentValue.trim();
+    if (!content) {
+      setCommentError("Comment cannot be empty.");
+      return;
+    }
+
+    setCommentActionLoading(true);
+    setCommentError("");
+    try {
+      const { data } = await axios.patch(
+        `${API_URL}/comments/comments/${commentId}`,
+        { content },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setComments((prev) => prev.map((c) => (c._id === commentId ? data : c)));
+      cancelEditComment();
+    } catch (err) {
+      setCommentError("Failed to update comment.");
+    } finally {
+      setCommentActionLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    setCommentActionLoading(true);
+    setCommentError("");
+    try {
+      await axios.delete(`${API_URL}/comments/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      setMenuOpenFor(null);
+    } catch (err) {
+      setCommentError("Failed to delete comment.");
+    } finally {
+      setCommentActionLoading(false);
+    }
   };
 
   return (
@@ -258,12 +330,80 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
                 <div className="item-details-comments-list">
                   {comments.map((c) => (
                     <div className="item-details-comment" key={c._id}>
-                      <div className="item-details-comment-author">
-                        {c.user?.userName || c.author?.userName || "User"}
+                      <div className="item-details-comment-header">
+                        <div className="item-details-comment-author">
+                          {c.user?.userName || c.author?.userName || "User"}
+                        </div>
+
+                        {canManageComment(c) && (
+                          <div className="comment-menu">
+                            <button
+                              type="button"
+                              className="comment-menu-btn"
+                              onClick={() => openCommentMenu(c._id)}
+                              aria-label="Comment actions"
+                              disabled={commentActionLoading}
+                            >
+                              ⋯
+                            </button>
+
+                            {menuOpenFor === c._id && (
+                              <div className="comment-menu-dropdown">
+                                <button
+                                  type="button"
+                                  className="comment-menu-item"
+                                  onClick={() => beginEditComment(c)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="comment-menu-item danger"
+                                  onClick={() => handleDeleteComment(c._id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="item-details-comment-content">
-                        {c.content}
-                      </div>
+
+                      {editingCommentId === c._id ? (
+                        <div className="comment-edit">
+                          <textarea
+                            className="item-details-textarea"
+                            rows="3"
+                            value={editCommentValue}
+                            onChange={(e) =>
+                              setEditCommentValue(e.target.value)
+                            }
+                            disabled={commentActionLoading}
+                          />
+                          <div className="comment-edit-actions">
+                            <button
+                              type="button"
+                              className="item-details-btn"
+                              onClick={cancelEditComment}
+                              disabled={commentActionLoading}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="item-details-btn primary"
+                              onClick={() => handleSaveComment(c._id)}
+                              disabled={commentActionLoading}
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="item-details-comment-content">
+                          {c.content}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -284,7 +424,11 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
-                <button className="item-details-btn primary" type="submit">
+                <button
+                  className="item-details-btn primary"
+                  type="submit"
+                  disabled={commentActionLoading}
+                >
                   Post
                 </button>
               </form>
