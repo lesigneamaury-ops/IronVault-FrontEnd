@@ -3,8 +3,7 @@ import axios from "axios";
 import "./HomePage.css";
 import ItemDetailsPage from "./ItemDetailsPage";
 import { FEATURES } from "../../config/freatures";
-
-const API_URL = "http://localhost:5005/api";
+import { API_URL } from "../../config/config";
 
 function HomePage() {
   const [items, setItems] = useState([]);

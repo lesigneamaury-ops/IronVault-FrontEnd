@@ -3,8 +3,7 @@ import axios from "axios";
 import "./ItemDetailsPage.css";
 import { useAuth } from "../../context/AuthContext";
 import { FEATURES } from "../../config/freatures";
-
-const API_URL = "http://localhost:5005/api";
+import { API_URL } from "../../config/config";
 
 function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
   const { user } = useAuth();

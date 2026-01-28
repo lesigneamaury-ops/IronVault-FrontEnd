@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import "./ProfilePage.css";
-
-const API_URL = "http://localhost:5005/api";
+import { API_URL } from "../../config/config";
 
 function ProfilePage() {
   const { currentUser, authenticateUser } = useAuth();
