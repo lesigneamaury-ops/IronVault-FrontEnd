@@ -1,83 +1,114 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import ItemDetailsPage from "./ItemDetailsPage";
+import "./TaggedPage.css";
 
-export default function TaggedPage() {
-  const canvasRef = useRef(null);
-  const rafRef = useRef(null);
+const API_URL = "http://localhost:5005/api";
+
+function TaggedPage() {
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const token = localStorage.getItem("authToken");
+
+  const fetchTaggedItems = async () => {
+    setIsLoading(true);
+    try {
+      const { data } = await axios.get(`${API_URL}/items/tagged`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const c = canvasRef.current;
-    if (!c) return;
-
-    const x = c.getContext("2d");
-
-    const S = Math.sin;
-    const C = Math.cos;
-
-    const resize = () => {
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      c.width = Math.floor(window.innerWidth * dpr);
-      c.height = Math.floor(window.innerHeight * dpr);
-      x.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-
-    const u = (t) => {
-      // Version “dwitter”: reset rapide + filtre invert
-      c.style.filter = "invert(1)";
-      c.width |= 0;
-
-      for (let i = 1e4; i--; ) {
-        const O = t / 2;
-        const v = i / 2 + O;
-        const F = i ** 0.9 % 10;
-
-        const X = F * S(v) - S(i + O);
-        const Y = F * C(v) + C(i - O);
-
-        x.fillRect(960 + X * 120, 540 + Y * 120, 3, 3);
-      }
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    const start = performance.now();
-    const loop = (now) => {
-      const t = (now - start) / 1000;
-      u(t);
-      rafRef.current = requestAnimationFrame(loop);
-    };
-
-    rafRef.current = requestAnimationFrame(loop);
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    fetchTaggedItems();
   }, []);
 
+  const openDetails = (item) => setSelectedItem(item);
+  const closeDetails = () => setSelectedItem(null);
+
+  const handleUpdatedItem = (updatedItem) => {
+    setItems((prev) =>
+      prev.map((it) => (it._id === updatedItem._id ? updatedItem : it)),
+    );
+
+    setSelectedItem((prev) =>
+      prev && prev._id === updatedItem._id ? updatedItem : prev,
+    );
+  };
+
+  const handleDeletedItem = (deletedId) => {
+    setItems((prev) => prev.filter((it) => it._id !== deletedId));
+    setSelectedItem(null);
+  };
+
   return (
-    <div style={{ position: "relative", height: "100vh", background: "#000" }}>
-      <canvas
-        ref={canvasRef}
-        style={{ width: "100%", height: "100%", display: "block" }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "grid",
-          placeItems: "center",
-          pointerEvents: "none",
-          color: "white",
-          fontWeight: 800,
-          letterSpacing: ".08em",
-          textTransform: "uppercase",
-          opacity: 0.9,
-          fontFamily: "system-ui, sans-serif",
-        }}
-      >
-        Tagged Page — In construction
+    <div className="tagged-page">
+      <div className="tagged-header">
+        <h1 className="tagged-title">Tagged</h1>
+        <p className="tagged-subtitle">All images where you are tagged.</p>
       </div>
+
+      {isLoading ? (
+        <div className="tagged-state">Loading...</div>
+      ) : items.length === 0 ? (
+        <div className="tagged-empty">
+          <div className="tagged-empty-title">No tagged items yet</div>
+          <div className="tagged-empty-text">
+            When someone tags you on an image, it will appear here.
+          </div>
+        </div>
+      ) : (
+        <div className="tagged-grid">
+          {items.map((item) => (
+            <article className="tagged-card" key={item._id}>
+              <button
+                type="button"
+                className="tagged-image-btn"
+                onClick={() => openDetails(item)}
+                aria-label="Open item details"
+              >
+                <img
+                  className="tagged-image"
+                  src={item.imageUrl}
+                  alt={item.caption || "Item"}
+                />
+              </button>
+
+              <div className="tagged-meta">
+                <div className="tagged-caption">{item.caption || "—"}</div>
+
+                <div className="tagged-row">
+                  <span>Posted by</span>
+                  <span>{item.postedBy?.userName}</span>
+                </div>
+
+                <div className="tagged-row">
+                  <span>Likes</span>
+                  <span>{item.likes?.length || 0}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {selectedItem && (
+        <ItemDetailsPage
+          item={selectedItem}
+          onClose={closeDetails}
+          onUpdated={handleUpdatedItem}
+          onDeleted={handleDeletedItem}
+        />
+      )}
     </div>
   );
 }
+
+export default TaggedPage;

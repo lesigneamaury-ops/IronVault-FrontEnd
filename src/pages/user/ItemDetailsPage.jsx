@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./ItemDetailsPage.css";
 import { useAuth } from "../../context/AuthContext";
+import { FEATURES } from "../../config/freatures";
 
 const API_URL = "http://localhost:5005/api";
 
@@ -275,12 +276,13 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
               <div className="item-details-title">
                 {item.postedBy?.userName || "Unknown"}
               </div>
-
-              <div className="item-details-subtitle">
-                {item.taggedUsers?.length
-                  ? `Tagged: ${item.taggedUsers.map((u) => u.userName).join(", ")}`
-                  : "Tagged: —"}
-              </div>
+              {FEATURES.TAGS && (
+                <div className="item-details-subtitle">
+                  {item.taggedUsers?.length
+                    ? `Tagged: ${item.taggedUsers.map((u) => u.userName).join(", ")}`
+                    : "Tagged: —"}
+                </div>
+              )}
             </div>
 
             <div className="item-details-caption">

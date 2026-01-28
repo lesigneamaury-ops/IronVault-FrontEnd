@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./HomePage.css";
 import ItemDetailsPage from "./ItemDetailsPage";
+import { FEATURES } from "../../config/freatures";
 
 const API_URL = "http://localhost:5005/api";
 
@@ -36,7 +37,6 @@ function HomePage() {
 
   useEffect(() => {
     fetchItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openCreateModal = () => {
@@ -170,12 +170,14 @@ function HomePage() {
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
 
-              <input
-                type="text"
-                placeholder="Tagged users (optional)"
-                value={taggedUsersRaw}
-                onChange={(e) => setTaggedUsersRaw(e.target.value)}
-              />
+              {FEATURES.TAGS && (
+                <input
+                  type="text"
+                  placeholder="Tagged users (optional)"
+                  value={taggedUsersRaw}
+                  onChange={(e) => setTaggedUsersRaw(e.target.value)}
+                />
+              )}
 
               <textarea
                 placeholder="Description"

@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Sidebar.css";
+import { FEATURES } from "../config/freatures";
 
 function Sidebar() {
   const { user } = useAuth();
@@ -15,7 +16,7 @@ function Sidebar() {
 
         <NavLink to="/liked">Liked</NavLink>
 
-        <NavLink to="/tagged">Tagged</NavLink>
+        {FEATURES.TAGS && <NavLink to="/tagged">Tagged</NavLink>}
 
         <NavLink to="/profile">Profile</NavLink>
 

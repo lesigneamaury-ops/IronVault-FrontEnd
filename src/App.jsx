@@ -8,6 +8,7 @@ import ProfilePage from "./pages/user/ProfilePage";
 import LikedPage from "./pages/user/LikedPage";
 import TaggedPage from "./pages/user/TaggedPage";
 import ItemDetailsPage from "./pages/user/ItemDetailsPage";
+import { FEATURES } from "./config/freatures";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
@@ -62,7 +63,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/liked" element={<LikedPage />} />
-          <Route path="/tagged" element={<TaggedPage />} />
+          {FEATURES.TAGS && <Route path="/tagged" element={<TaggedPage />} />}
           <Route path="/items/:itemId" element={<ItemDetailsPage />} />
         </Route>
       </Route>
