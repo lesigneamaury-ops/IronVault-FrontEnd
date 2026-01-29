@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ItemDetailsPage from "./ItemDetailsPage";
 import "./TaggedPage.css";
-
-const API_URL = "http://localhost:5005/api";
+import { API_URL } from "../../config/config";
 
 function TaggedPage() {
   const [items, setItems] = useState([]);
