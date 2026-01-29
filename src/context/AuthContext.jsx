@@ -1,10 +1,8 @@
 import axios from "axios";
 import { createContext, useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_URL } from "../config/config";
 const AuthContext = createContext();
-
-const API_URL = "http://localhost:5005/api";
 
 const AuthWrapper = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
