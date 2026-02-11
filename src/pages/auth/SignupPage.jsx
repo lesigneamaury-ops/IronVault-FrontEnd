@@ -10,6 +10,8 @@ function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const nav = useNavigate();
   const { authenticateUser } = useAuth();
@@ -17,16 +19,24 @@ function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setSuccessMessage("");
+
+    if (password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      await axios.post(`${API_URL}/auth/signup`, { name, email, password });
-
-      const loginRes = await axios.post(`${API_URL}/auth/login`, {
+      const response = await axios.post(`${API_URL}/auth/signup`, {
+        name,
         email,
         password,
       });
-      localStorage.setItem("authToken", loginRes.data.authToken);
 
+      localStorage.setItem("authToken", response.data.authToken);
+      setSuccessMessage("Account created!");
       await authenticateUser();
       nav("/");
     } catch (err) {
@@ -39,6 +49,8 @@ function SignupPage() {
       } else {
         setErrorMessage("Signup failed");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -69,18 +81,24 @@ function SignupPage() {
           </label>
 
           <label>
-            Password
+            Password (min. 6 characters)
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
             />
           </label>
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
+          {successMessage && (
+            <p className="success-message">{successMessage}</p>
+          )}
 
-          <button type="submit">Sign up</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Sign up"}
+          </button>
         </form>
 
         <p>

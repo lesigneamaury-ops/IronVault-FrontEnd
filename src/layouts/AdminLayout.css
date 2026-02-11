@@ -1,0 +1,42 @@
+.admin-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-nav {
+  height: 56px;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 8, 8, 0.96),
+    rgba(5, 5, 5, 0.99)
+  );
+  border-bottom: 1px solid rgba(243, 196, 107, 0.25);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-nav a {
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: rgba(243, 233, 210, 0.75);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.admin-nav a.active {
+  color: #ffd79a;
+  background: radial-gradient(
+    circle at 50% 120%,
+    rgba(255, 140, 26, 0.45),
+    rgba(255, 140, 26, 0.15),
+    transparent 75%
+  );
+}
+
+.admin-content {
+  flex: 1;
+}

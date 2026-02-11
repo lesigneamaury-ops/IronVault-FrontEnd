@@ -9,6 +9,8 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const { authenticateUser } = useAuth();
   const nav = useNavigate();
@@ -16,6 +18,8 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
 
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
@@ -23,6 +27,7 @@ function LoginPage() {
         password,
       });
       localStorage.setItem("authToken", response.data.authToken);
+      setSuccessMessage("Login successful!");
       await authenticateUser();
       nav("/");
     } catch (err) {
@@ -35,6 +40,8 @@ function LoginPage() {
       } else {
         setErrorMessage("Login failed");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -65,8 +72,13 @@ function LoginPage() {
           </label>
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
+          {successMessage && (
+            <p className="success-message">{successMessage}</p>
+          )}
 
-          <button type="submit">Login</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Logging in..." : "Login"}
+          </button>
         </form>
 
         <p>

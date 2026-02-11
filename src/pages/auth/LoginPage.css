@@ -12,6 +12,18 @@
   background: #060606;
 }
 
+@media (max-width: 768px) {
+  .login-screen {
+    padding: 200px 16px 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-screen {
+    padding: 140px 12px 40px;
+  }
+}
+
 .login-screen::after {
   content: "";
   position: fixed;
@@ -97,16 +109,6 @@
     0 0 24px rgba(255, 122, 26, 0.1);
 }
 
-.error-message {
-  margin-top: 6px;
-  padding: 10px 12px;
-
-  border-radius: 12px;
-  background: rgba(255, 77, 77, 0.12);
-  border: 1px solid rgba(255, 77, 77, 0.35);
-  color: #ffd2d2;
-}
-
 .login-form button {
   margin-top: 6px;
   padding: 12px;
@@ -126,6 +128,11 @@
   font-weight: 700;
   letter-spacing: 0.4px;
   cursor: pointer;
+}
+
+.login-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .login-page p {

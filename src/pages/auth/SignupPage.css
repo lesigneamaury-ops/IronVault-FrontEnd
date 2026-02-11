@@ -12,6 +12,18 @@
   background: #060606;
 }
 
+@media (max-width: 768px) {
+  .signup-screen {
+    padding: 220px 16px 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-screen {
+    padding: 140px 12px 40px;
+  }
+}
+
 .signup-screen::after {
   content: "";
   position: fixed;
@@ -110,16 +122,6 @@
     0 0 24px rgba(255, 122, 26, 0.1);
 }
 
-.error-message {
-  margin-top: 6px;
-  padding: 10px 12px;
-
-  border-radius: 12px;
-  background: rgba(255, 77, 77, 0.12);
-  border: 1px solid rgba(255, 77, 77, 0.35);
-  color: #ffd2d2;
-}
-
 .signup-form button {
   margin-top: 6px;
   padding: 12px;
@@ -139,6 +141,11 @@
   font-weight: 700;
   letter-spacing: 0.4px;
   cursor: pointer;
+}
+
+.signup-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .signup-page p {

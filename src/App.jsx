@@ -5,10 +5,8 @@ import SignupPage from "./pages/auth/SignupPage";
 
 import HomePage from "./pages/user/HomePage";
 import ProfilePage from "./pages/user/ProfilePage";
-import LikedPage from "./pages/user/LikedPage";
-import TaggedPage from "./pages/user/TaggedPage";
-import ItemDetailsPage from "./pages/user/ItemDetailsPage";
-import { FEATURES } from "./config/freatures";
+import ReactedPage from "./pages/user/ReactedPage";
+import CohortPage from "./pages/user/CohortPage";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
@@ -18,10 +16,18 @@ import AdminLayout from "./layouts/AdminLayout";
 
 import { useAuth } from "./context/AuthContext";
 
+function LoadingScreen() {
+  return (
+    <div className="loading-screen">
+      <div className="loading-spinner" />
+    </div>
+  );
+}
+
 function PublicOnlyRoute() {
   const { isLoggedIn, isLoading } = useAuth();
 
-  if (isLoading) return null;
+  if (isLoading) return <LoadingScreen />;
   if (isLoggedIn) return <Navigate to="/" replace />;
 
   return <Outlet />;
@@ -30,7 +36,7 @@ function PublicOnlyRoute() {
 function ProtectedRoute() {
   const { isLoggedIn, isLoading } = useAuth();
 
-  if (isLoading) return null;
+  if (isLoading) return <LoadingScreen />;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
   return <Outlet />;
@@ -39,7 +45,7 @@ function ProtectedRoute() {
 function AdminRoute() {
   const { isLoggedIn, isLoading, user } = useAuth();
 
-  if (isLoading) return null;
+  if (isLoading) return <LoadingScreen />;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
   const isAdmin = user?.role === "ADMIN";
@@ -62,9 +68,8 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/liked" element={<LikedPage />} />
-          {FEATURES.TAGS && <Route path="/tagged" element={<TaggedPage />} />}
-          <Route path="/items/:itemId" element={<ItemDetailsPage />} />
+          <Route path="/cohort" element={<CohortPage />} />
+          <Route path="/reacted" element={<ReactedPage />} />
         </Route>
       </Route>
 

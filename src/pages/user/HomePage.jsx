@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./HomePage.css";
 import ItemDetailsPage from "./ItemDetailsPage";
-import { FEATURES } from "../../config/freatures";
 import { API_URL } from "../../config/config";
 
 function HomePage() {
@@ -13,15 +12,13 @@ function HomePage() {
 
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState("");
-  const [taggedUsersRaw, setTaggedUsersRaw] = useState("");
   const [formError, setFormError] = useState("");
 
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const token = localStorage.getItem("authToken");
-
   const fetchItems = async () => {
     setIsLoading(true);
+    const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.get(`${API_URL}/items`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -47,7 +44,6 @@ function HomePage() {
     setIsModalOpen(false);
     setFile(null);
     setCaption("");
-    setTaggedUsersRaw("");
     setFormError("");
   };
 
@@ -79,21 +75,15 @@ function HomePage() {
       return;
     }
 
-    const taggedUsers = taggedUsersRaw
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
+    const token = localStorage.getItem("authToken");
     try {
       const formData = new FormData();
       formData.append("image", file);
       formData.append("caption", caption);
-      formData.append("taggedUsers", JSON.stringify(taggedUsers));
 
       await axios.post(`${API_URL}/items/create-item`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -124,12 +114,14 @@ function HomePage() {
         <div className="items-grid">
           {items.map((item) => (
             <article className="item-card" key={item._id}>
-              <img
-                className="item-image"
-                src={item.imageUrl}
-                alt={item.caption || "Item"}
-                onClick={() => openDetails(item)}
-              />
+              <div className="item-image-container">
+                <img
+                  className="item-image"
+                  src={item.imageUrl}
+                  alt={item.caption || "Item"}
+                  onClick={() => openDetails(item)}
+                />
+              </div>
 
               <div className="item-meta">
                 <div className="item-caption">{item.caption || "—"}</div>
@@ -137,11 +129,6 @@ function HomePage() {
                 <div className="item-row">
                   <span>Posted by</span>
                   <span>{item.postedBy?.userName || "Unknown"}</span>
-                </div>
-
-                <div className="item-row">
-                  <span>Likes</span>
-                  <span>{item.likes?.length || 0}</span>
                 </div>
               </div>
             </article>
@@ -168,15 +155,6 @@ function HomePage() {
                 accept="image/*"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
-
-              {FEATURES.TAGS && (
-                <input
-                  type="text"
-                  placeholder="Tagged users (optional)"
-                  value={taggedUsersRaw}
-                  onChange={(e) => setTaggedUsersRaw(e.target.value)}
-                />
-              )}
 
               <textarea
                 placeholder="Description"

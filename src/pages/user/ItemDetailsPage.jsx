@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import "./ItemDetailsPage.css";
 import { useAuth } from "../../context/AuthContext";
-import { FEATURES } from "../../config/freatures";
 import { API_URL } from "../../config/config";
+
+const REACTION_EMOJIS = ["\u{1F44D}", "\u{2764}\u{FE0F}", "\u{1F602}", "\u{1F525}", "\u{1F44F}"];
 
 function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
   const { user } = useAuth();
-  const token = localStorage.getItem("authToken");
 
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -34,11 +34,27 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
     user?._id && postedById && String(user._id) === String(postedById);
   const canManage = isAdmin || isAuthor;
 
-  const likesCount = useMemo(() => item?.likes?.length || 0, [item]);
+  // Scroll lock when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && onClose) onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const fetchComments = async () => {
     setCommentsLoading(true);
     setCommentError("");
+    const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.get(
         `${API_URL}/comments/items/${item._id}/comments`,
@@ -64,6 +80,7 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
     const content = newComment.trim();
     if (!content) return;
 
+    const token = localStorage.getItem("authToken");
     try {
       await axios.post(
         `${API_URL}/comments/items/${item._id}/comments`,
@@ -79,29 +96,45 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
   };
 
   const handleDeleteItem = async () => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+
     setActionError("");
+    const token = localStorage.getItem("authToken");
     try {
       await axios.delete(`${API_URL}/items/${item._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (onClose) onClose();
       if (onDeleted) onDeleted(item._id);
+      if (onClose) onClose();
     } catch (err) {
       setActionError("Delete failed.");
     }
   };
 
-  const handleToggleLike = async () => {
+  // Item-level reactions helpers
+  const getItemReactionCount = (emoji) => {
+    const entry = item?.reactions?.find((r) => r.emoji === emoji);
+    return entry?.users?.length || 0;
+  };
+
+  const hasReactedItem = (emoji) => {
+    const entry = item?.reactions?.find((r) => r.emoji === emoji);
+    if (!entry?.users || !user?._id) return false;
+    return entry.users.some((u) => String(u?._id || u) === String(user._id));
+  };
+
+  const handleToggleItemReaction = async (emoji) => {
     setActionError("");
+    const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.patch(
-        `${API_URL}/items/${item._id}/like`,
-        {},
+        `${API_URL}/items/${item._id}/reactions`,
+        { emoji },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (onUpdated) onUpdated(data);
     } catch (err) {
-      setActionError("Like failed.");
+      setActionError("Reaction failed.");
     }
   };
 
@@ -121,6 +154,7 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
     const caption = editCaption.trim();
 
     setEditLoading(true);
+    const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.patch(
         `${API_URL}/items/${item._id}`,
@@ -176,6 +210,7 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
 
     setCommentActionLoading(true);
     setCommentError("");
+    const token = localStorage.getItem("authToken");
     try {
       const { data } = await axios.patch(
         `${API_URL}/comments/comments/${commentId}`,
@@ -193,8 +228,12 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
   };
 
   const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Are you sure you want to delete this comment?"))
+      return;
+
     setCommentActionLoading(true);
     setCommentError("");
+    const token = localStorage.getItem("authToken");
     try {
       await axios.delete(`${API_URL}/comments/comments/${commentId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -203,6 +242,38 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
       setMenuOpenFor(null);
     } catch (err) {
       setCommentError("Failed to delete comment.");
+    } finally {
+      setCommentActionLoading(false);
+    }
+  };
+
+  const getReactionCount = (comment, emoji) => {
+    const entry = comment?.reactions?.find((r) => r.emoji === emoji);
+    return entry?.users?.length || 0;
+  };
+
+  const hasReacted = (comment, emoji) => {
+    const entry = comment?.reactions?.find((r) => r.emoji === emoji);
+    if (!entry?.users || !user?._id) return false;
+
+    return entry.users.some((u) => String(u?._id || u) === String(user._id));
+  };
+
+  const handleToggleReaction = async (commentId, emoji) => {
+    setCommentActionLoading(true);
+    setCommentError("");
+
+    const token = localStorage.getItem("authToken");
+    try {
+      const { data } = await axios.patch(
+        `${API_URL}/comments/comments/${commentId}/reactions`,
+        { emoji },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setComments((prev) => prev.map((c) => (c._id === commentId ? data : c)));
+    } catch (error) {
+      setCommentError("Failed to update reaction.");
     } finally {
       setCommentActionLoading(false);
     }
@@ -236,14 +307,6 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
             />
 
             <div className="item-details-actions">
-              <button
-                type="button"
-                className="item-details-btn"
-                onClick={handleToggleLike}
-              >
-                Like ({likesCount})
-              </button>
-
               {canManage && (
                 <>
                   <button
@@ -265,6 +328,22 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
               )}
             </div>
 
+            <div className="item-reaction-summary">
+              {REACTION_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  className={`item-reaction-summary-btn ${hasReactedItem(emoji) ? "active" : ""}`}
+                  onClick={() => handleToggleItemReaction(emoji)}
+                >
+                  <span className="emoji">{emoji}</span>
+                  <span className="count">
+                    {getItemReactionCount(emoji) || ""}
+                  </span>
+                </button>
+              ))}
+            </div>
+
             {actionError && (
               <div className="item-details-error">{actionError}</div>
             )}
@@ -275,19 +354,12 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
               <div className="item-details-title">
                 {item.postedBy?.userName || "Unknown"}
               </div>
-              {FEATURES.TAGS && (
-                <div className="item-details-subtitle">
-                  {item.taggedUsers?.length
-                    ? `Tagged: ${item.taggedUsers.map((u) => u.userName).join(", ")}`
-                    : "Tagged: —"}
-                </div>
-              )}
             </div>
 
             <div className="item-details-caption">
               {!isEditing ? (
                 <p className="item-details-caption-text">
-                  {item.caption || "—"}
+                  {item.caption || "\u2014"}
                 </p>
               ) : (
                 <div className="item-details-edit">
@@ -345,7 +417,7 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
                               aria-label="Comment actions"
                               disabled={commentActionLoading}
                             >
-                              ⋯
+                              {"\u22EF"}
                             </button>
 
                             {menuOpenFor === c._id && (
@@ -401,9 +473,31 @@ function ItemDetailsPage({ item, onClose, onDeleted, onUpdated }) {
                           </div>
                         </div>
                       ) : (
-                        <div className="item-details-comment-content">
-                          {c.content}
-                        </div>
+                        <>
+                          <div className="item-details-comment-content">
+                            {c.content}
+                          </div>
+                          <div className="comment-reactions">
+                            {REACTION_EMOJIS.map((emoji) => {
+                              const count = getReactionCount(c, emoji);
+                              const reacted = hasReacted(c, emoji);
+
+                              return (
+                                <button
+                                  key={`${c._id}-${emoji}`}
+                                  type="button"
+                                  className={`comment-reaction-btn ${reacted ? "active" : ""}`}
+                                  onClick={() =>
+                                    handleToggleReaction(c._id, emoji)
+                                  }
+                                  disabled={commentActionLoading}
+                                >
+                                  {emoji} {count > 0 ? count : ""}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
                       )}
                     </div>
                   ))}

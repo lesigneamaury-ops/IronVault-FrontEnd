@@ -4,7 +4,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-left">
-        <a href="https://github.com/" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/lesigneamaury-ops" target="_blank" rel="noopener noreferrer">
           <img
             src="/assets/Githublogo.png"
             alt="GitHub"
