@@ -1,3 +1,4 @@
+// LoginPage - Handles user login with email and password
 import "./LoginPage.css";
 import { useState } from "react";
 import axios from "axios";
@@ -6,15 +7,17 @@ import { useAuth } from "../../context/AuthContext";
 import { API_URL } from "../../config/config";
 
 function LoginPage() {
+  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const { authenticateUser } = useAuth();
+  const { authenticateUser } = useAuth(); // Re-fetch user data after login
   const nav = useNavigate();
 
+  // handleSubmit - Send login credentials to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
@@ -22,15 +25,20 @@ function LoginPage() {
     setIsSubmitting(true);
 
     try {
+      // Call backend login endpoint
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
       });
+      // Store JWT token in localStorage for future requests
       localStorage.setItem("authToken", response.data.authToken);
       setSuccessMessage("Login successful!");
+      // Fetch and store user data in AuthContext
       await authenticateUser();
+      // Redirect to home page
       nav("/");
     } catch (err) {
+      // Display error message from backend
       if (err.response && err.response.data) {
         if (err.response.data.errorMessage)
           setErrorMessage(err.response.data.errorMessage);

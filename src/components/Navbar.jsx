@@ -1,3 +1,4 @@
+// Navbar - Top navigation bar with logo, user name, and logout button
 import "./Navbar.css";
 import { useAuth } from "../context/AuthContext";
 
@@ -17,7 +18,9 @@ function Navbar() {
         />
       </div>
       <div className="navbar-right">
+        {/* Display current user's name */}
         {user && <span className="navbar-user">{user.userName}</span>}
+        {/* Logout button clears auth token and redirects to login */}
         <button onClick={handleLogout}>Logout</button>
       </div>
     </header>

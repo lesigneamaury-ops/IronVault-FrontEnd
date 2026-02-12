@@ -1,3 +1,4 @@
+// ReactedPage - Displays items that the current user has reacted to
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ItemDetailsPage from "./ItemDetailsPage";
@@ -9,6 +10,7 @@ function ReactedPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // fetchReactedItems - Fetch items where current user has added a reaction
   const fetchReactedItems = async () => {
     setIsLoading(true);
     const token = localStorage.getItem("authToken");
@@ -24,10 +26,12 @@ function ReactedPage() {
     }
   };
 
+  // Fetch reacted items on component mount
   useEffect(() => {
     fetchReactedItems();
   }, []);
 
+  // Modal controls for viewing item details
   const openDetails = (item) => {
     setSelectedItem(item);
   };
@@ -35,6 +39,7 @@ function ReactedPage() {
     setSelectedItem(null);
   };
 
+  // Callback handlers from ItemDetailsPage
   const handleItemDeleted = (deletedId) => {
     setItems((prev) => prev.filter((it) => it._id !== deletedId));
   };

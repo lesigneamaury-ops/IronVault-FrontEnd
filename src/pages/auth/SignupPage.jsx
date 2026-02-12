@@ -1,3 +1,4 @@
+// SignupPage - Handles user registration with name, email, and password
 import "./SignupPage.css";
 import { useState } from "react";
 import axios from "axios";
@@ -6,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { API_URL } from "../../config/config";
 
 function SignupPage() {
+  // Form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,13 +16,15 @@ function SignupPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const nav = useNavigate();
-  const { authenticateUser } = useAuth();
+  const { authenticateUser } = useAuth(); // Re-fetch user data after signup
 
+  // handleSubmit - Send signup data to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
+    // Client-side password validation
     if (password.length < 6) {
       setErrorMessage("Password must be at least 6 characters long.");
       return;
@@ -29,15 +33,19 @@ function SignupPage() {
     setIsSubmitting(true);
 
     try {
+      // Call backend signup endpoint
       const response = await axios.post(`${API_URL}/auth/signup`, {
         name,
         email,
         password,
       });
 
+      // Store JWT token in localStorage
       localStorage.setItem("authToken", response.data.authToken);
       setSuccessMessage("Account created!");
+      // Fetch and store user data in AuthContext
       await authenticateUser();
+      // Redirect to home page
       nav("/");
     } catch (err) {
       if (err.response && err.response.data) {

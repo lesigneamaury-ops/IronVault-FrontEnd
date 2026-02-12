@@ -1,3 +1,4 @@
+// HomePage - Main gallery page displaying all items from all cohorts
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./HomePage.css";
@@ -5,17 +6,22 @@ import ItemDetailsPage from "./ItemDetailsPage";
 import { API_URL } from "../../config/config";
 
 function HomePage() {
+  // Items state
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Create item modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Form state for creating new item
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState("");
   const [formError, setFormError] = useState("");
 
+  // Item details modal state
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // fetchItems - Fetch all items from backend
   const fetchItems = async () => {
     setIsLoading(true);
     const token = localStorage.getItem("authToken");
@@ -31,10 +37,12 @@ function HomePage() {
     }
   };
 
+  // Fetch items on component mount
   useEffect(() => {
     fetchItems();
   }, []);
 
+  // Modal controls for creating new item
   const openCreateModal = () => {
     setFormError("");
     setIsModalOpen(true);
@@ -47,6 +55,7 @@ function HomePage() {
     setFormError("");
   };
 
+  // Modal controls for viewing item details
   const openDetails = (item) => {
     setSelectedItem(item);
   };
@@ -55,6 +64,7 @@ function HomePage() {
     setSelectedItem(null);
   };
 
+  // Callback handlers from ItemDetailsPage
   const handleItemDeleted = (deletedId) => {
     setItems((prev) => prev.filter((it) => it._id !== deletedId));
   };
@@ -66,6 +76,7 @@ function HomePage() {
     setSelectedItem(updatedItem);
   };
 
+  // handleSubmit - Upload new item (image + caption) to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -77,10 +88,12 @@ function HomePage() {
 
     const token = localStorage.getItem("authToken");
     try {
+      // Create FormData for data upload
       const formData = new FormData();
       formData.append("image", file);
       formData.append("caption", caption);
 
+      // Upload to Cloudinary
       await axios.post(`${API_URL}/items/create-item`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -88,7 +101,7 @@ function HomePage() {
       });
 
       closeCreateModal();
-      fetchItems();
+      fetchItems(); // Refresh items list
     } catch (err) {
       setFormError("Upload failed. Please try again.");
     }

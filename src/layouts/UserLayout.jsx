@@ -1,3 +1,5 @@
+// UserLayout - Standard layout for user pages (home, profile, cohort, reacted)
+// Includes navbar, sidebar, footer, and main content area
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";

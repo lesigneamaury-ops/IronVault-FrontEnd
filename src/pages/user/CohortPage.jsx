@@ -1,8 +1,10 @@
+// CohortPage - Displays all students from the same cohort as the current user
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./CohortPage.css";
 import { API_URL } from "../../config/config";
 
+// isSafeUrl - Validates URLs to prevent attacks
 function isSafeUrl(url) {
   if (!url) return false;
   try {
@@ -14,14 +16,16 @@ function isSafeUrl(url) {
 }
 
 function CohortPage() {
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState([]); // Students from same cohort
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch all students from current user's cohort on component mount
   useEffect(() => {
     const fetchStudents = async () => {
       setIsLoading(true);
       const token = localStorage.getItem("authToken");
       try {
+        // Backend returns students from same cohort as current user
         const { data } = await axios.get(`${API_URL}/cohorts/me/students`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -36,6 +40,7 @@ function CohortPage() {
     fetchStudents();
   }, []);
 
+  // renderSocialLink - Render social link as clickable link or "-" if invalid/empty
   const renderSocialLink = (label, url) => {
     const safe = isSafeUrl(url);
     return (

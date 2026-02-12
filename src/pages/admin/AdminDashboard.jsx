@@ -1,3 +1,5 @@
+// AdminDashboard - Admin-only page for cohort moderation
+// Admins can select a cohort, view all students, and moderate all items
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ItemDetailsPage from "../user/ItemDetailsPage";
@@ -5,18 +7,20 @@ import "./AdminDashboard.css";
 import { API_URL } from "../../config/config";
 
 function AdminDashboard() {
-  const [cohorts, setCohorts] = useState([]);
-  const [selectedCohortId, setSelectedCohortId] = useState("");
-  const [students, setStudents] = useState([]);
-  const [items, setItems] = useState([]);
+  const [cohorts, setCohorts] = useState([]); // All cohorts
+  const [selectedCohortId, setSelectedCohortId] = useState(""); // Currently selected cohort ID
+  const [students, setStudents] = useState([]); // Students from selected cohort
+  const [items, setItems] = useState([]); // Items from selected cohort
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null); // Item details modal state
 
+  // Fetch all cohorts on component mount, and auto-select the first one
   useEffect(() => {
     const fetchCohorts = async () => {
       setIsLoading(true);
       const token = localStorage.getItem("authToken");
       try {
+        // Admin endpoint returns all cohorts
         const { data } = await axios.get(`${API_URL}/admin/cohorts`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -24,6 +28,7 @@ function AdminDashboard() {
         const cohortList = Array.isArray(data) ? data : [];
         setCohorts(cohortList);
 
+        // Auto-select first cohort if none selected yet
         if (cohortList.length > 0) {
           setSelectedCohortId((prev) => prev || cohortList[0]._id);
         }
@@ -37,6 +42,7 @@ function AdminDashboard() {
     fetchCohorts();
   }, []);
 
+  // Fetch students and items whenever selected cohort changes
   useEffect(() => {
     if (!selectedCohortId) return;
 
@@ -66,6 +72,7 @@ function AdminDashboard() {
     fetchCohortData();
   }, [selectedCohortId]);
 
+  // Callback handlers from ItemDetailsPage
   const handleItemDeleted = (deletedId) => {
     setItems((prev) => prev.filter((it) => it._id !== deletedId));
     setSelectedItem(null);
@@ -118,7 +125,9 @@ function AdminDashboard() {
                 {students.map((student) => (
                   <article key={student._id} className="admin-student-card">
                     <img
-                      src={student.profilePicture || "/assets/defaultAvatar.png"}
+                      src={
+                        student.profilePicture || "/assets/defaultAvatar.png"
+                      }
                       alt={student.userName}
                     />
                     <div className="admin-student-name">{student.userName}</div>
@@ -143,7 +152,10 @@ function AdminDashboard() {
                     onClick={() => setSelectedItem(item)}
                     aria-label="Open item moderation"
                   >
-                    <img src={item.imageUrl} alt={item.caption || "Cohort item"} />
+                    <img
+                      src={item.imageUrl}
+                      alt={item.caption || "Cohort item"}
+                    />
                     <div className="admin-item-meta">
                       <span>{item.postedBy?.userName || "Unknown"}</span>
                       <span>{item.reactions?.length || 0} reactions</span>
